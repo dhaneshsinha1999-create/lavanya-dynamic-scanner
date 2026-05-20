@@ -6,8 +6,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+
 app.use(express.json({ limit: "1mb" }));
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(__dirname));
 
 function buildSystemPrompt({ mood, reason }) {
   const moodGuidance = {
@@ -104,15 +105,24 @@ app.post("/api/chat", async (req, res) => {
       });
     }
 
-    const text = data?.choices?.[0]?.message?.content?.trim() || "Aaj jo bhi feel ho raha hai, usme tum phir bhi achhi ho.";
+    const text =
+      data?.choices?.[0]?.message?.content?.trim() ||
+      "Aaj jo bhi feel ho raha hai, usme tum phir bhi achhi ho.";
+
     res.json({ text });
   } catch (error) {
-    res.status(500).json({ error: error?.message || "Unexpected server error." });
+    res.status(500).json({
+      error: error?.message || "Unexpected server error."
+    });
   }
 });
 
+app.get("/", (_req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
+
 app.get("*", (_req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+  res.sendFile(path.join(__dirname, "index.html"));
 });
 
 const port = process.env.PORT || 3000;
